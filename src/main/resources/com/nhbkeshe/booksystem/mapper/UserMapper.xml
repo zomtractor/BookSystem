@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nhbkeshe.booksystem.mapper.UserMapper">
+
+    <resultMap id="userResultMap" type="user">
+        <result column="borrowing_num" property="borrowingNum"/>
+        <result column="is_manager" property="isManager"/>
+    </resultMap>
+
+    <insert id="addUser" useGeneratedKeys="true" keyProperty="id">
+        insert into user (username, password)
+        values (#{username},#{password});
+    </insert>
+
+</mapper>

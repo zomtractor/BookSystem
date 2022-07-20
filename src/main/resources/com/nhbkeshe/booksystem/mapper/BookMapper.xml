@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nhbkeshe.booksystem.mapper.BookMapper">
+
+    <resultMap id="bookResultMap" type="book">
+        <result column="book_name" property="bookName"/>
+        <result column="author_name" property="authorName"/>
+    </resultMap>
+
+    <select id="getBooksByClearConditions" resultMap="bookResultMap">
+        select * from book
+        <where>
+            <if test="book.bookName != null and book.bookName != ''">
+                and book_name=#{book.bookName}
+            </if>
+            <if test="book.press != null and book.press != '' ">
+                and press = #{book.press}
+            </if>
+            <if test="book.authorName !=null and book.authorName != '' ">
+                and author_name = #{book.authorName}
+            </if>
+        </where>
+        <if test="byName or byPrice">
+            order by
+            <choose>
+                <when test="byName and byPrice"> book_name,price </when>
+                <when test="byName and not byPrice"> book_name </when>
+                <when test="not byName and byPrice">price</when>
+            </choose>
+            <if test="isDesc"> desc </if>
+        </if>
+    </select>
+
+    <!--通过模糊条件搜索书籍  -->
+    <select id="getBooksByUnClearConditions" resultMap="bookResultMap">
+        select * from book
+        <where>    /*通过where标签处理语法问题*/
+            /*条件判断*/
+            <if test="book.bookName != null and book.bookName != ''">
+                and book_name like concat('%',#{book.bookName},'%')
+            </if>
+            <if test="book.press != null and book.press != '' ">
+                and press like concat('%',#{book.press},'%')
+            </if>
+            <if test="book.authorName !=null and book.authorName != '' ">
+                and author_name like concat('%',#{book.authorName},'%')
+            </if>
+        </where>
+        <if test="byName or byPrice">
+            order by
+            <choose>
+                <when test="byName and byPrice"> book_name,price </when>
+                <when test="byName and not byPrice"> book_name </when>
+                <when test="not byName and byPrice">price</when>
+            </choose>
+            <if test="isDesc"> desc </if>
+        </if>
+    </select>
+    <!--查询借阅信息（多表查询，用特殊需求的数据覆盖相同类型的成员）-->
+    <select id="getBooksByBorrow" resultMap="bookResultMap">
+        select b.id, book_name, author_name, date_format(from_unixtime(ub.borrow_time/1000,'%Y-%m-%d'),'%Y-%m-%d') as press, price, demo, remains
+        from book b inner join user_borrow ub on b.id = ub.book_id
+        where ub.user_id=#{id}
+    </select>
+
+    <update id="updateBook">
+        update book
+        <set>
+            <if test="abook.bookName!=null and abook.bookName!=''">book_name=#{abook.bookName}, </if>
+            <if test="abook.authorName!=null and abook.authorName!=''">author_name=#{abook.authorName}, </if>
+            <if test="abook.press!=null and abook.press!=''">press=#{abook.press}, </if>
+            <if test="abook.price!=0">price=#{abook.price}, </if>
+            <if test="abook.demo!=null and abook.demo!=''">demo=#{abook.demo}, </if>
+        </set>
+        where id=#{abook.id}
+    </update>
+
+</mapper>
